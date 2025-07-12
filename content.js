@@ -1,8 +1,9 @@
 const autofillData = {
-    NAME: "Aditya Nayak",
-    Email: "adityanayak_ug22@tnnlu.ac.in",
-    "REGISTER NUMBER": "BA0220004",
-    "MOBILE NUMBER": "1234567890",
+  NAME: "ABC XYZ",
+  Email: "example_00@coll.org.in",
+  "Register number": "BM0220004",
+  Programme: "PQY",
+  "I read and understood": "Yes"
 };
 
 const fillForm = () => {
