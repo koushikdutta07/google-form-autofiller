@@ -8,6 +8,12 @@
         font-family: Arial, sans-serif;
         padding: 10px;
       }
+      input {
+        width: 100%;
+        padding: 6px;
+        margin-bottom: 8px;
+        box-sizing: border-box;
+      }
       button {
         width: 100%;
         padding: 10px;
@@ -17,7 +23,14 @@
   </head>
   <body>
     <h3>Form Autofiller</h3>
+
+    <!-- NEW: Dynamic inputs -->
+    <input id="name" type="text" placeholder="Name" />
+    <input id="email" type="email" placeholder="Email" />
+
+    <!-- EXISTING button (unchanged) -->
     <button id="fillBtn">Autofill Now</button>
+
     <script src="popup.js"></script>
   </body>
 </html>

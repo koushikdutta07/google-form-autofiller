@@ -28,7 +28,6 @@ const fillForm = () => {
         }
     });
 
-    // For MCQs (like Yes/No radio buttons)
     const radioLabels = document.querySelectorAll(".AB7Lab");
 
     radioLabels.forEach((label) => {
@@ -40,5 +39,5 @@ const fillForm = () => {
 };
 
 window.addEventListener("load", () => {
-    setTimeout(fillForm, 1000); // wait a bit for form to render
+    setTimeout(fillForm, 1000);
 });

@@ -1,17 +1,25 @@
 document.getElementById("fillBtn").addEventListener("click", async () => {
+    // 1️⃣ Read values from popup inputs
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+
     let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        function: () => {
-            const autofillData = {
-                Name: "Aditya Nayak",
-                Email: "adityanayak_ug22@tnnlu.ac.in",
+
+        // 2️⃣ Pass data safely as arguments
+        args: [
+            {
+                Name: name,
+                Email: email,
                 "Register number": "BA0220004",
                 Programme: "BA. LLB( hons)",
                 "I read and understood": "Yes",
-            };
+            },
+        ],
 
+        function: (autofillData) => {
             const fillForm = () => {
                 const inputs = document.querySelectorAll(
                     "input[type='text'], textarea"
@@ -20,7 +28,7 @@ document.getElementById("fillBtn").addEventListener("click", async () => {
                 inputs.forEach((input) => {
                     const labelElement = input
                         .closest(".Qr7Oae")
-                        .querySelector(
+                        ?.querySelector(
                             "div[role='heading'], div[data-placeholder]"
                         );
 
