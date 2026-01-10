@@ -1,64 +1,81 @@
-document.getElementById("fillBtn").addEventListener("click", async () => {
-    // 1️⃣ Read values from popup inputs
-    const name = document.getElementById("name").value;
-    const email = document.getElementById("email").value;
+const container = document.getElementById("fields");
+const fillBtn = document.getElementById("fillBtn");
+let schema = [];
+
+document.addEventListener("DOMContentLoaded", async () => {
+    let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+    chrome.tabs.sendMessage(tab.id, { type: "GET_FORM_SCHEMA" }, (res) => {
+        if (!res || !res.length) {
+            container.innerHTML = "<p>No form detected.</p>";
+            return;
+        }
+        schema = res;
+        renderUI();
+    });
+});
+
+function renderUI() {
+    container.innerHTML = "";
+
+    schema.forEach((field, i) => {
+        const div = document.createElement("div");
+        div.className = "field";
+
+        let html = `<strong>${field.label}</strong>`;
+
+        if (
+            field.type === "text" ||
+            field.type === "email" ||
+            field.type === "textarea"
+        ) {
+            html += `<input data-i="${i}" />`;
+        }
+
+        if (field.type === "radio" || field.type === "checkbox") {
+            field.options.forEach((opt) => {
+                html += `
+          <label>
+            <input type="${field.type}"
+                   name="f-${i}"
+                   value="${opt}">
+            ${opt}
+          </label>`;
+            });
+        }
+
+        div.innerHTML = html;
+        container.appendChild(div);
+    });
+}
+
+fillBtn.addEventListener("click", async () => {
+    const data = [];
+
+    schema.forEach((field, i) => {
+        const wrapper = container.children[i];
+        const inputs = wrapper.querySelectorAll("input");
+        const values = [];
+
+        inputs.forEach((input) => {
+            if (
+                ((input.type === "checkbox" || input.type === "radio") &&
+                    input.checked) ||
+                (input.type === "text" && input.value)
+            ) {
+                values.push(input.value);
+            }
+        });
+
+        if (values.length) {
+            data.push({ index: field.index, values });
+        }
+    });
 
     let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-    chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-
-        // 2️⃣ Pass data safely as arguments
-        args: [
-            {
-                Name: name,
-                Email: email,
-                "Register number": "BA0220004",
-                Programme: "BA. LLB( hons)",
-                "I read and understood": "Yes",
-            },
-        ],
-
-        function: (autofillData) => {
-            const fillForm = () => {
-                const inputs = document.querySelectorAll(
-                    "input[type='text'], textarea"
-                );
-
-                inputs.forEach((input) => {
-                    const labelElement = input
-                        .closest(".Qr7Oae")
-                        ?.querySelector(
-                            "div[role='heading'], div[data-placeholder]"
-                        );
-
-                    if (labelElement) {
-                        const labelText = labelElement.innerText.trim();
-
-                        Object.entries(autofillData).forEach(([key, value]) => {
-                            if (labelText.includes(key)) {
-                                input.focus();
-                                input.value = value;
-
-                                input.dispatchEvent(
-                                    new Event("input", { bubbles: true })
-                                );
-                            }
-                        });
-                    }
-                });
-
-                const radioLabels = document.querySelectorAll(".AB7Lab");
-
-                radioLabels.forEach((label) => {
-                    const labelText = label.innerText.trim();
-                    if (labelText === autofillData["I read and understood"]) {
-                        label.click();
-                    }
-                });
-            };
-
-            fillForm();
-        },
+    chrome.tabs.sendMessage(tab.id, {
+        type: "AUTOFILL",
+        data,
     });
 });

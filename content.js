@@ -1,43 +1,59 @@
-const autofillData = {
-  NAME: "ABC XYZ",
-  Email: "example_00@coll.org.in",
-  "Register number": "BM0220004",
-  Programme: "PQY",
-  "I read and understood": "Yes"
-};
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    if (msg.type === "GET_FORM_SCHEMA") {
+        const schema = [];
 
-const fillForm = () => {
-    const inputs = document.querySelectorAll("input[type='text'], textarea");
+        document.querySelectorAll(".Qr7Oae").forEach((block, index) => {
+            const labelEl = block.querySelector("div[role='heading']");
+            if (!labelEl) return;
 
-    inputs.forEach((input) => {
-        const labelElement = input
-            .closest(".Qr7Oae")
-            .querySelector("div[role='heading'], div[data-placeholder]");
+            const label = labelEl.innerText.trim();
+            let type = null;
+            let options = [];
 
-        if (labelElement) {
-            const labelText = labelElement.innerText.trim();
+            if (block.querySelector("input[type='email']")) type = "email";
+            else if (block.querySelector("textarea")) type = "textarea";
+            else if (block.querySelector("input[type='text']")) type = "text";
+            else if (block.querySelector("[role='radio']")) type = "radio";
+            else if (block.querySelector("[role='checkbox']"))
+                type = "checkbox";
 
-            Object.entries(autofillData).forEach(([key, value]) => {
-                if (labelText.includes(key)) {
-                    input.focus();
-                    input.value = value;
+            if (type === "radio" || type === "checkbox") {
+                options = [...block.querySelectorAll(".AB7Lab")].map((o) =>
+                    o.innerText.trim()
+                );
+            }
 
-                    input.dispatchEvent(new Event("input", { bubbles: true }));
+            if (type) {
+                schema.push({ index, label, type, options });
+            }
+        });
+
+        sendResponse(schema);
+    }
+
+    if (msg.type === "AUTOFILL") {
+        const blocks = document.querySelectorAll(".Qr7Oae");
+
+        msg.data.forEach((field) => {
+            const block = blocks[field.index];
+            if (!block) return;
+
+            const input = block.querySelector(
+                "input[type='text'], input[type='email'], textarea"
+            );
+
+            if (input && field.values.length) {
+                input.focus();
+                input.value = field.values[0];
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+
+            const optionLabels = block.querySelectorAll(".AB7Lab");
+            optionLabels.forEach((label) => {
+                if (field.values.includes(label.innerText.trim())) {
+                    label.click();
                 }
             });
-        }
-    });
-
-    const radioLabels = document.querySelectorAll(".AB7Lab");
-
-    radioLabels.forEach((label) => {
-        const labelText = label.innerText.trim();
-        if (labelText === autofillData["I read and understood"]) {
-            label.click();
-        }
-    });
-};
-
-window.addEventListener("load", () => {
-    setTimeout(fillForm, 1000);
+        });
+    }
 });

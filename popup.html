@@ -1,36 +1,40 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>AutoFill Form</title>
-    <style>
-      body {
-        width: 200px;
-        font-family: Arial, sans-serif;
-        padding: 10px;
-      }
-      input {
-        width: 100%;
-        padding: 6px;
-        margin-bottom: 8px;
-        box-sizing: border-box;
-      }
-      button {
-        width: 100%;
-        padding: 10px;
-        font-size: 14px;
-      }
-    </style>
-  </head>
-  <body>
-    <h3>Form Autofiller</h3>
+<head>
+  <title>Form Autofiller</title>
+  <style>
+    body {
+      width: 320px;
+      font-family: Arial, sans-serif;
+      padding: 10px;
+    }
+    .field {
+      border-bottom: 1px solid #ccc;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+    }
+    input {
+      width: 100%;
+      margin-top: 5px;
+      padding: 6px;
+    }
+    label {
+      display: block;
+      margin-top: 4px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+    }
+  </style>
+</head>
 
-    <!-- NEW: Dynamic inputs -->
-    <input id="name" type="text" placeholder="Name" />
-    <input id="email" type="email" placeholder="Email" />
+<body>
+  <h3>Google Form Autofiller</h3>
+  <div id="fields"></div>
+  <button id="fillBtn">Autofill Now</button>
 
-    <!-- EXISTING button (unchanged) -->
-    <button id="fillBtn">Autofill Now</button>
-
-    <script src="popup.js"></script>
-  </body>
+  <script src="popup.js"></script>
+</body>
 </html>
