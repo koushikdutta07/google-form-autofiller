@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Form Autofiller</title>
+  <title>Text Autofiller</title>
   <style>
     body {
-      width: 320px;
+      width: 280px;
       font-family: Arial, sans-serif;
       padding: 10px;
     }
@@ -13,27 +13,21 @@
       margin-bottom: 10px;
       padding-bottom: 10px;
     }
-    input {
+    input, button {
       width: 100%;
-      margin-top: 5px;
+      margin-top: 6px;
       padding: 6px;
-    }
-    label {
-      display: block;
-      margin-top: 4px;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 8px;
+      box-sizing: border-box;
     }
   </style>
 </head>
 
 <body>
-  <h3>Google Form Autofiller</h3>
+  <h3>Text Autofiller</h3>
+
   <div id="fields"></div>
-  <button id="fillBtn">Autofill Now</button>
+
+  <button id="addField">+ Add Field</button>
 
   <script src="popup.js"></script>
 </body>

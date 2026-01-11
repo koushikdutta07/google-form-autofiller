@@ -1,81 +1,55 @@
-const container = document.getElementById("fields");
-const fillBtn = document.getElementById("fillBtn");
-let schema = [];
+const fieldsContainer = document.getElementById("fields");
+const addFieldBtn = document.getElementById("addField");
 
-document.addEventListener("DOMContentLoaded", async () => {
-    let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+function createField(label = "", value = "") {
+    const div = document.createElement("div");
+    div.className = "field";
 
-    chrome.tabs.sendMessage(tab.id, { type: "GET_FORM_SCHEMA" }, (res) => {
-        if (!res || !res.length) {
-            container.innerHTML = "<p>No form detected.</p>";
-            return;
+    div.innerHTML = `
+        <input class="label" placeholder="Exact question text" value="${label}">
+        <input class="value" placeholder="Value to fill" value="${value}">
+    `;
+
+    fieldsContainer.appendChild(div);
+}
+
+/* ➕ Add new field (DO NOT save yet) */
+addFieldBtn.onclick = () => {
+    createField();
+};
+
+/* Save only when user types */
+function saveData() {
+    const data = [];
+
+    document.querySelectorAll(".field").forEach((f) => {
+        const label = f.querySelector(".label").value.trim();
+        const value = f.querySelector(".value").value.trim();
+
+        if (label && value) {
+            data.push({ label, value });
         }
-        schema = res;
-        renderUI();
     });
-});
 
-function renderUI() {
-    container.innerHTML = "";
-
-    schema.forEach((field, i) => {
-        const div = document.createElement("div");
-        div.className = "field";
-
-        let html = `<strong>${field.label}</strong>`;
-
-        if (
-            field.type === "text" ||
-            field.type === "email" ||
-            field.type === "textarea"
-        ) {
-            html += `<input data-i="${i}" />`;
-        }
-
-        if (field.type === "radio" || field.type === "checkbox") {
-            field.options.forEach((opt) => {
-                html += `
-          <label>
-            <input type="${field.type}"
-                   name="f-${i}"
-                   value="${opt}">
-            ${opt}
-          </label>`;
-            });
-        }
-
-        div.innerHTML = html;
-        container.appendChild(div);
+    chrome.storage.sync.set({ autofillData: data }, () => {
+        // Notify content script that data was saved
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (tabs[0] && tabs[0].url && tabs[0].url.includes("docs.google.com/forms")) {
+                chrome.tabs.sendMessage(tabs[0].id, { action: "autofill" }).catch(() => {
+                    // Ignore errors if content script isn't ready
+                });
+            }
+        });
     });
 }
 
-fillBtn.addEventListener("click", async () => {
-    const data = [];
+fieldsContainer.addEventListener("input", saveData);
 
-    schema.forEach((field, i) => {
-        const wrapper = container.children[i];
-        const inputs = wrapper.querySelectorAll("input");
-        const values = [];
-
-        inputs.forEach((input) => {
-            if (
-                ((input.type === "checkbox" || input.type === "radio") &&
-                    input.checked) ||
-                (input.type === "text" && input.value)
-            ) {
-                values.push(input.value);
-            }
-        });
-
-        if (values.length) {
-            data.push({ index: field.index, values });
-        }
-    });
-
-    let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-    chrome.tabs.sendMessage(tab.id, {
-        type: "AUTOFILL",
-        data,
-    });
+/* Load saved data */
+chrome.storage.sync.get("autofillData", (res) => {
+    if (res.autofillData?.length) {
+        res.autofillData.forEach((f) => createField(f.label, f.value));
+    } else {
+        createField();
+    }
 });
